@@ -1,0 +1,41 @@
+  "": "",
+  "": "",
+  "": "",
+  "": "",
+  "": "",
+  "": "",
+  "": "",
+  "": "",
+  "": "",
+  "": ""
+
+
+STEP 1 → simplify input
+STEP 2 → try exact Igbo → English
+STEP 3 → try exact English → Igbo
+STEP 4 → try simplified Igbo → English
+STEP 5 → try simplified English → Igbo
+STEP 6 → try suggestions
+STEP 7 → fail message
+
+
+
+
+# APP_ENGINE.PY
+
+
+
+
+
+
+
+
+
+
+
+
+# MAINAPP.PY
+
+
+
+
