@@ -1,9 +1,9 @@
 from engine.jsonloader import simplify_text
 from engine.processor import suggest_word
+from engine.jsonloader import load_dictionaries
 
 class IgboTranslator:
     def __init__(self, dict_path):
-        from engine.jsonloader import load_dictionaries
         self.all_json, self.reverse_words_phrases, self.simple_keys, self.reverse_simple_keys = load_dictionaries(dict_path)
 
     def translate(self, text):
