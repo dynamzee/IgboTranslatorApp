@@ -1,5 +1,20 @@
 from engine.processor import suggest_word
-from engine.jsonloader import load_dictionaries
+from engine.jsonloader import simplify_text, load_dictionaries
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
+
+
+def smart_translator(user_input, all_json, reverse_words_phrases, simple_keys, reverse_simple_keys):
+    user_input = user_input.strip().lower()
+
+    if user_input in all_json: return all_json[user_input]
+
+    if user_input in reverse_words_phrases: return reverse_words_phrases[user_input]
+
+    doc = nlp(user_input)
+
+    return "imeela, we don't have this one yet."
 
 class IgboTranslator:
     def __init__(self, dict_path):
