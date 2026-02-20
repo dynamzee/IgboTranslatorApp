@@ -1,8 +1,8 @@
 import difflib
 from datetime import datetime
 
-def suggest_word(word, dictionary_keys):
-    suggestion = difflib.get_close_matches(word, dictionary_keys, n=1, cutoff=0.7)
+def suggest_word(word, all_dictionary):
+    suggestion = difflib.get_close_matches(word, all_dictionary, n=1, cutoff=0.7)
     return suggestion[0] if suggestion else None
 
 def get_greeting():
