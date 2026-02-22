@@ -2,9 +2,12 @@ from engine.translator import IgboTranslator
 from engine.processor import get_greeting
 
 def run_app():
-    all_json = ["my_data/igbo_phrases_dict.json", "my_data/igbo_words_dict.json"]
+    json_paths = [
+        "my_data/igbo_phrases_dict.json",
+        "my_data/igbo_words_dict.json"
+    ]
 
-    translator = IgboTranslator(all_json)
+    translator = IgboTranslator(json_paths)
 
     print(get_greeting())
     print("<* WELCOME TO DYNA's IGBO TRANSLATOR APP *>")
@@ -16,4 +19,3 @@ def run_app():
 
 if __name__ == "__main__":
     run_app()
-
