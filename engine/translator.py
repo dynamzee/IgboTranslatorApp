@@ -1,12 +1,14 @@
 from engine.processor import suggest_word
 from engine.jsonloader import simplify_text, load_dictionaries
 import spacy
+import re
 
 nlp = spacy.load("en_core_web_sm")
 
 def normalize_text_variations(text):
     variations = {
         "i'm": "i am",
+        "i’m": "i am",
         "don't": "do not",
         "can't": "cannot",
         "isn't": "is not",
@@ -23,22 +25,6 @@ def normalize_text_variations(text):
     normalized_words = [variations.get(w, w) for w in words]
     return " ".join(normalized_words)
 
-
-def smart_translator(user_input, all_json, reverse_words_phrases, simple_keys, reverse_simple_keys):
-    user_input = normalize_text_variations(user_input.strip().lower())
-
-    if user_input in all_json:
-        return all_json[user_input]
-
-    if user_input in reverse_words_phrases:
-        return reverse_words_phrases[user_input]
-
-    # This will matter later when you use spaCy more deeply
-    doc = nlp(user_input)
-
-    return "imeela, we don't have this one yet."
-
-
 class IgboTranslator:
     def __init__(self, paths):
         (
@@ -49,38 +35,52 @@ class IgboTranslator:
         ) = load_dictionaries(paths)
 
     def translate(self, text):
-        text = normalize_text_variations(text.strip().lower())
+        original_text = text.strip().lower()
+        text = normalize_text_variations(original_text)
+
+        if original_text in self.all_json:
+            return self.all_json[original_text]
+        if original_text in self.reverse_words_phrases:
+            return self.reverse_words_phrases[original_text]
+
+        translation = []
+        segmented_text = re.split(r'[,?.]', original_text)
+
+        for segment in segmented_text:
+            separated_segments = segment.strip()
+            if not separated_segments: continue
+
+            normalized_segment = normalize_text_variations(separated_segments)
+            simple_segment = simplify_text(separated_segments)
+
+            if separated_segments in self.all_json:
+                translation.append(self.all_json[separated_segments])
+            elif normalized_segment in self.all_json:
+                translation.append(self.all_json[normalized_segment])
+            elif simple_segment in self.simple_keys:
+                translation.append(self.all_json[self.simple_keys[simple_segment]])
+            elif separated_segments in self.reverse_words_phrases:
+                translation.append(self.reverse_words_phrases[separated_segments])
+            elif simple_segment in self.reverse_simple_keys:
+                translation.append(self.reverse_words_phrases[self.reverse_simple_keys[simple_segment]])
+            else:
+                translation.append(f"[{separated_segments}?]")
+
+        if any("[" not in part for part in translation):
+            return ", ".join(translation)
+
+
         simple_input = simplify_text(text)
 
-        # Direct English → Igbo
-        if text in self.all_json:
-            return self.all_json[text]
-
-        # Direct Igbo → English
-        if text in self.reverse_words_phrases:
-            return self.reverse_words_phrases[text]
-
-        # Normalized English → Igbo
-        if simple_input in self.simple_keys:
-            return self.all_json[self.simple_keys[simple_input]]
-
-        # Normalized Igbo → English
-        if simple_input in self.reverse_simple_keys:
-            return self.reverse_words_phrases[self.reverse_simple_keys[simple_input]]
-
-        # Suggestions (Igbo)
-        suggestion_in_igbo = suggest_word(simple_input, self.simple_keys.keys())
+        suggestion_in_igbo = suggest_word(simple_input, self.reverse_simple_keys.keys())
         if suggestion_in_igbo:
-            original = self.simple_keys[suggestion_in_igbo]
-            meaning = self.reverse_words_phrases.get(original)
-            return f"Did you mean '{original}'? → {meaning}"
+            matched = self.reverse_simple_keys[suggestion_in_igbo]
+            return f"Did you mean '{matched}'? → {self.reverse_words_phrases[matched]}"
 
-        # Suggestions (English)
-        suggestion_in_english = suggest_word(simple_input, self.reverse_simple_keys.keys())
+        suggestion_in_english = suggest_word(simple_input, self.simple_keys.keys())
         if suggestion_in_english:
-            original = self.reverse_simple_keys[suggestion_in_english]
-            meaning = self.all_json.get(original)
-            return f"Did you mean '{original}'? → {meaning}"
+            matched = self.simple_keys[suggestion_in_english]
+            return f"Did you mean '{matched}'? → {self.all_json[matched]}"
 
         return "Ndo, I couldn't find that word."
 
