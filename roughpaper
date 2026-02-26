@@ -1,64 +1,11 @@
-def translate(self, text):
-        original_text = text.strip().lower()
-        normalized_total = normalize_text_variations(original_text)
-
-        if original_text in self.all_json:
-            return self.all_json[original_text]
-        if original_text in self.reverse_words_phrases:
-            return self.reverse_words_phrases[original_text]
-
-        translation_results = []
-        segments = re.split(r'[,?.]', original_text)
-
-        for segment in segments:
-            clean_seg = segment.strip()
-            if not clean_seg: continue
-
-            norm_seg = normalize_text_variations(clean_seg)
-            simp_seg = simplify_text(clean_seg)
-
-            if clean_seg in self.all_json:
-                translation_results.append(self.all_json[clean_seg])
-            elif norm_seg in self.all_json:
-                translation_results.append(self.all_json[norm_seg])
-            elif simp_seg in self.simple_keys:
-                translation_results.append(self.all_json[self.simple_keys[simp_seg]])
-            elif clean_seg in self.reverse_words_phrases:
-                translation_results.append(self.reverse_words_phrases[clean_seg])
-            elif simp_seg in self.reverse_simple_keys:
-                translation_results.append(self.reverse_words_phrases[self.reverse_simple_keys[simp_seg]])
-            else:
-                translation_results.append(f"[{clean_seg}?]")
-
-
-        if any("[" not in part for part in translation_results):
-            return " | ".join(translation_results)
-
-        simple_input = simplify_text(original_text)
-
-        # Check English Suggestions
-        eng_sugg = suggest_word(simple_input, self.simple_keys.keys())
-        if eng_sugg:
-            match = self.simple_keys[eng_sugg]
-            return f"Did you mean (EN): '{match}'? → {self.all_json[match]}"
-
-        # Check Igbo Suggestions
-        igbo_sugg = suggest_word(simple_input, self.reverse_simple_keys.keys())
-        if igbo_sugg:
-            match = self.reverse_simple_keys[igbo_sugg]
-            return f"Iche na o bu (IG): '{match}'? → {self.reverse_words_phrases[match]}"
-
-        return "Ndo, I couldn't find that word."
-
-
-
-
-
-
-
-
-
-
-
-
-
+"": "",
+  "": "",
+  "": "",
+  "": "",
+  "": "",
+  "": "",
+  "": "",
+  "": "",
+  "": "",
+  "": "",
+  "": "",

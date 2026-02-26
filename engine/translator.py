@@ -5,6 +5,7 @@ import re
 
 nlp = spacy.load("en_core_web_sm")
 
+
 def normalize_text_variations(text):
     variations = {
         "i'm": "i am",
@@ -24,6 +25,7 @@ def normalize_text_variations(text):
     words = text.lower().split()
     normalized_words = [variations.get(w, w) for w in words]
     return " ".join(normalized_words)
+
 
 class IgboTranslator:
     def __init__(self, paths):
@@ -50,25 +52,41 @@ class IgboTranslator:
             separated_segments = segment.strip()
             if not separated_segments: continue
 
+            found = False
             normalized_segment = normalize_text_variations(separated_segments)
             simple_segment = simplify_text(separated_segments)
 
             if separated_segments in self.all_json:
-                translation.append(self.all_json[separated_segments])
+                translation.append(self.all_json[separated_segments]); found = True
             elif normalized_segment in self.all_json:
-                translation.append(self.all_json[normalized_segment])
+                translation.append(self.all_json[normalized_segment]); found = True
             elif simple_segment in self.simple_keys:
-                translation.append(self.all_json[self.simple_keys[simple_segment]])
+                translation.append(self.all_json[self.simple_keys[simple_segment]]); found = True
             elif separated_segments in self.reverse_words_phrases:
-                translation.append(self.reverse_words_phrases[separated_segments])
+                translation.append(self.reverse_words_phrases[separated_segments]); found = True
             elif simple_segment in self.reverse_simple_keys:
-                translation.append(self.reverse_words_phrases[self.reverse_simple_keys[simple_segment]])
-            else:
+                translation.append(self.reverse_words_phrases[self.reverse_simple_keys[simple_segment]]); found = True
+
+            if not found:
+                with_question = f"{separated_segments}?"
+                if with_question in self.all_json:
+                    translation.append(self.all_json[with_question]);
+                    found = True
+
+            if not found:
+                doc = nlp(separated_segments)
+                lemmas = [token.lemma_ for token in doc if not token.is_punct]
+                for key in self.all_json.keys():
+                    if key in separated_segments or any(lemma in key for lemma in lemmas if len(lemma) > 3):
+                        translation.append(self.all_json[key])
+                        found = True
+                        break
+
+            if not found:
                 translation.append(f"[{separated_segments}?]")
 
         if any("[" not in part for part in translation):
             return ", ".join(translation)
-
 
         simple_input = simplify_text(text)
 
@@ -83,6 +101,8 @@ class IgboTranslator:
             return f"Did you mean '{matched}'? → {self.all_json[matched]}"
 
         return "Ndo, I couldn't find that word."
+
+
 
 
 
