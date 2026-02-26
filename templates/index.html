@@ -31,41 +31,65 @@
 
         resultDiv.innerText = "Translating...";
 
-        const response = await fetch('/translate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text })
-        });
+        try {
+            const response = await fetch('/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            });
 
-        const data = await response.json();
-        resultDiv.innerText = data.translation;
+            const data = await response.json();
+            resultDiv.innerText = data.translation;
+        } catch (error) {
+            resultDiv.innerText = "Error connecting to server.";
+            console.error("Translation error:", error);
+        }
     }
 
     async function sendFeedback() {
         const original = document.getElementById('inputText').value;
         const user_input = document.getElementById('userSuggestion').value;
+        const submitBtn = document.querySelector('.suggestion_correct_button');
 
         if (!original || !user_input) {
             alert("Please provide both the original text and your suggestion.");
             return;
         }
 
-        const response = await fetch('/feedback', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                original: original,
-                user_input: user_input,
-                type: 'correction'
-            })
-        });
+        // Visual feedback so user knows it's working
+        const originalBtnText = submitBtn.innerText;
+        submitBtn.innerText = "Sending...";
+        submitBtn.disabled = true;
 
-        const data = await response.json();
-        alert(data.message);
-        document.getElementById('userSuggestion').value = "";
+        try {
+            const response = await fetch('/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    original: original,
+                    user_input: user_input
+                })
+            });
+
+            const data = await response.json();
+
+            // Handle the specific success/error status from mainapp.py
+            if (data.status === "success") {
+                alert(data.message);
+                document.getElementById('userSuggestion').value = "";
+            } else {
+                alert("Error: " + data.message);
+            }
+        } catch (error) {
+            alert("Failed to connect to the email service.");
+            console.error("Feedback error:", error);
+        } finally {
+            // Restore button
+            submitBtn.innerText = originalBtnText;
+            submitBtn.disabled = false;
+        }
     }
 </script>
 
 </body>
 </html>
-
