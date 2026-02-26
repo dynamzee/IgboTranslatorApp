@@ -48,17 +48,27 @@ def feedback():
 
     admin_email = os.environ.get('EMAIL_OWNER')
 
+    print(f"DEBUG: Attempting to send email to: {admin_email}")
+
     if not original or not user_input:
         return jsonify({"status": "error", "message": "Missing data"}), 400
 
     if not admin_email:
+        print("DEBUG ERROR: EMAIL_OWNER variable is EMPTY!")
         return jsonify({"status": "error", "message": "Server configuration error."}), 500
 
     msg = Message("New Igbo Translation Suggestion!",
                   recipients=[admin_email])
     msg.body = f"Original: {original}\nSuggested Correction: {user_input}"
 
-    Thread(target=send_async_email, args=(app, msg)).start()
+    try:
+        mail.send(msg)
+        print("DEBUG: mail.send completed successfully!")
+    except Exception as e:
+        print(f"DEBUG MAIL ERROR: {e}")
+        return jsonify({"status": "error", "message": "Mail failed."}), 500
+
+    #Thread(target=send_async_email, args=(app, msg)).start()
 
     return jsonify({"status": "success", "message": "Daalu!😊 Your suggestion is being processed."})
 
