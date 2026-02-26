@@ -6,12 +6,14 @@ def simplify_text(text):
     nkowa = "".join(char for char in nkowa if unicodedata.category(char) != "Mn")
     return nkowa.lower()
 
-def load_dictionaries(paths: list):
-    all_json = {}
-    for path in paths:
-        with open(path, "r", encoding="utf-8") as file:
-            words_phrases = json.load(file)
-            all_json.update(words_phrases)
+
+def load_dictionaries(paths: dict):
+    with open(paths["all_json"], "r", encoding="utf-8") as file:
+        all_json = json.load(file)
+
+    with open(paths["reverse_words_phrases"], "r", encoding="utf-8") as file:
+        words_only = json.load(file)
+        all_json.update(words_only)
 
     reverse_words_phrases = {}
     for eng, igbo in all_json.items():

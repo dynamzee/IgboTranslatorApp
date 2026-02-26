@@ -9,3 +9,43 @@
   "": "",
   "": "",
   "": "",
+
+from flask import Flask, render_template, request, jsonify
+from engine.translator import IgboTranslator
+from engine.suggestion_feedback import your_suggestion_or_correction
+
+app = Flask(__name__)
+
+# Initialize your Gold Standard
+# Adjust paths to where your JSONs live
+translator = IgboTranslator(paths={
+    "all_json": "engine/phrases.json",
+    "reverse_words_phrases": "engine/reverse_phrases.json",
+    "simple_keys": "engine/simple_keys.json",
+    "reverse_simple_keys": "engine/reverse_simple_keys.json"
+})
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/translate', methods=['POST'])
+def translate():
+    text = request.json.get('text', '')
+    result = translator.translate(text)
+    return jsonify({"translation": result})
+
+@app.route('/feedback', methods=['POST'])
+def feedback():
+    data = request.json
+    your_suggestion_or_correction(
+        data['original'],
+        data['user_input'],
+        data.get('type', 'correction')
+    )
+    return jsonify({"status": "success", "message": "Daalu!"})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+

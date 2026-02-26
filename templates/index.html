@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dyna Translator App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <h2>DYNA's TRANSLATOR APP</h2>
+
+    <textarea id="inputText" placeholder="Enter English or Igbo text here..."></textarea>
+    <button onclick="translateText()">Translate</button>
+
+    <div id="result">Translation will appear here...</div>
+
+    <div class="feedback-section">
+        <p><strong>Help us improve!</strong> Suggest a better translation:</p>
+        <input type="text" id="userSuggestion" class="feedback-input" placeholder="Your suggested translation">
+        <button class="btn-small" onclick="sendFeedback()">Send Correction</button>
+    </div>
+</div>
+
+<script>
+    async function translateText() {
+        const text = document.getElementById('inputText').value;
+        const resultDiv = document.getElementById('result');
+        if (!text) return;
+
+        resultDiv.innerText = "Translating...";
+
+        const response = await fetch('/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text })
+        });
+
+        const data = await response.json();
+        resultDiv.innerText = data.translation;
+    }
+
+    async function sendFeedback() {
+        const original = document.getElementById('inputText').value;
+        const user_input = document.getElementById('userSuggestion').value;
+
+        if (!original || !user_input) {
+            alert("Please provide both the original text and your suggestion.");
+            return;
+        }
+
+        const response = await fetch('/feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                original: original,
+                user_input: user_input,
+                type: 'correction'
+            })
+        });
+
+        const data = await response.json();
+        alert(data.message);
+        document.getElementById('userSuggestion').value = "";
+    }
+</script>
+
+</body>
+</html>
