@@ -1,16 +1,18 @@
 from flask import Flask, render_template, request, jsonify
 from engine.translator import IgboTranslator
 from flask_mail import Mail, Message
+from threading import Thread
 import os
 
 app = Flask(__name__)
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.environ.get('EMAIL_USER')
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USERNAME'] = os.environ.get('EMAIL_OWNER')
 app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASS')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('EMAIL_USER')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('EMAIL_OWNER')
 
 mail = Mail(app)
 
@@ -20,6 +22,13 @@ translator = IgboTranslator(paths={
     "simple_keys": "my_data/igbo_phrases_dict.json",
     "reverse_simple_keys": "my_data/igbo_words_dict.json"
 })
+
+def send_async_email(app, msg):
+    with app.app_context():
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print(f"Background email error: {e}")
 
 @app.route('/')
 def index():
@@ -37,22 +46,21 @@ def feedback():
     original = data.get('original')
     user_input = data.get('user_input')
 
-    recipient = os.environ.get('EMAIL_USER')
+    admin_email = os.environ.get('EMAIL_OWNER')
 
     if not original or not user_input:
         return jsonify({"status": "error", "message": "Missing data"}), 400
 
+    if not admin_email:
+        return jsonify({"status": "error", "message": "Server configuration error."}), 500
+
     msg = Message("New Igbo Translation Suggestion!",
-                  recipients=[recipient])
-    msg.body = f"Original English/Igbo: {original}\nSuggested Correction: {user_input}"
+                  recipients=[admin_email])
+    msg.body = f"Original: {original}\nSuggested Correction: {user_input}"
 
-    try:
-        mail.send(msg)
-        return jsonify({"status": "success", "message": "Imela! Your suggestion has been sent to Dyna."})
-    except Exception as e:
-        print(f"Error sending mail: {e}")
-        return jsonify({"status": "error", "message": "Failed to send suggestion. Please try again later."}), 500
+    Thread(target=send_async_email, args=(app, msg)).start()
 
+    return jsonify({"status": "success", "message": "Daalu!😊 Your suggestion is being processed."})
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
