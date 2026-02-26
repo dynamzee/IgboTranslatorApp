@@ -7,9 +7,9 @@ import os
 app = Flask(__name__)
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_USERNAME'] = os.environ.get('EMAIL_OWNER')
 app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASS')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('EMAIL_OWNER')
@@ -27,8 +27,9 @@ def send_async_email(app, msg):
     with app.app_context():
         try:
             mail.send(msg)
+            print("SUCCESS: Background email sent!")
         except Exception as e:
-            print(f"Background email error: {e}")
+            print(f"ERROR: Background email failed: {e}")
 
 @app.route('/')
 def index():
@@ -48,27 +49,17 @@ def feedback():
 
     admin_email = os.environ.get('EMAIL_OWNER')
 
-    print(f"DEBUG: Attempting to send email to: {admin_email}")
-
     if not original or not user_input:
         return jsonify({"status": "error", "message": "Missing data"}), 400
 
     if not admin_email:
-        print("DEBUG ERROR: EMAIL_OWNER variable is EMPTY!")
         return jsonify({"status": "error", "message": "Server configuration error."}), 500
 
     msg = Message("New Igbo Translation Suggestion!",
                   recipients=[admin_email])
     msg.body = f"Original: {original}\nSuggested Correction: {user_input}"
 
-    try:
-        mail.send(msg)
-        print("DEBUG: mail.send completed successfully!")
-    except Exception as e:
-        print(f"DEBUG MAIL ERROR: {e}")
-        return jsonify({"status": "error", "message": "Mail failed."}), 500
-
-    #Thread(target=send_async_email, args=(app, msg)).start()
+    Thread(target=send_async_email, args=(app, msg)).start()
 
     return jsonify({"status": "success", "message": "Daalu!😊 Your suggestion is being processed."})
 
