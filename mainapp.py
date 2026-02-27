@@ -23,14 +23,6 @@ translator = IgboTranslator(paths={
     "reverse_simple_keys": "my_data/igbo_words_dict.json"
 })
 
-def send_async_email(app, msg):
-    with app.app_context():
-        try:
-            mail.send(msg)
-            print("SUCCESS: Background email sent!")
-        except Exception as e:
-            print(f"ERROR: Background email failed: {e}")
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -68,6 +60,6 @@ def feedback():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT",10000))
     app.run(host='0.0.0.0', port=port)
 
