@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from engine.translator import IgboTranslator
 from flask_mail import Mail, Message
-from threading import Thread
 import os
 
 app = Flask(__name__)
@@ -47,23 +46,26 @@ def feedback():
     data = request.json
     original = data.get('original')
     user_input = data.get('user_input')
-
     admin_email = os.environ.get('EMAIL_OWNER')
+
+    print(f"DIAGNOSTIC: Sending from {admin_email} to {admin_email}")
 
     if not original or not user_input:
         return jsonify({"status": "error", "message": "Missing data"}), 400
 
-    if not admin_email:
-        return jsonify({"status": "error", "message": "Server configuration error."}), 500
-
     msg = Message("New Igbo Translation Suggestion!",
-                  sender=os.environ.get('EMAIL_OWNER'),
-                  recipients=[os.environ.get('EMAIL_OWNER')])
+                  sender=admin_email,
+                  recipients=[admin_email])
     msg.body = f"Original: {original}\nSuggested Correction: {user_input}"
 
-    Thread(target=send_async_email, args=(app, msg)).start()
-
-    return jsonify({"status": "success", "message": "Daalu!😊 Your suggestion is being processed."})
+    try:
+        print("DIAGNOSTIC: Attempting mail.send...")
+        mail.send(msg)
+        print("DIAGNOSTIC: mail.send SUCCESSFUL!")
+        return jsonify({"status": "success", "message": "Daalu! Your suggestion was sent."})
+    except Exception as e:
+        print(f"DIAGNOSTIC ERROR: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
