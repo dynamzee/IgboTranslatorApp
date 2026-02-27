@@ -10,6 +10,7 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_DEBUG'] = True
 app.config['MAIL_USERNAME'] = os.environ.get('EMAIL_OWNER')
 app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASS')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('EMAIL_OWNER')
@@ -56,7 +57,8 @@ def feedback():
         return jsonify({"status": "error", "message": "Server configuration error."}), 500
 
     msg = Message("New Igbo Translation Suggestion!",
-                  recipients=[admin_email])
+                  sender=os.environ.get('EMAIL_OWNER'),
+                  recipients=[os.environ.get('EMAIL_OWNER')])
     msg.body = f"Original: {original}\nSuggested Correction: {user_input}"
 
     Thread(target=send_async_email, args=(app, msg)).start()
