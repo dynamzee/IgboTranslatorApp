@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from engine.translator import IgboTranslator
-from engine.processor import get_greeting
+from engine.processor import get_greeting, translate_hybrid
 import os
 import requests
 import threading
@@ -38,7 +38,7 @@ def index():
 @app.route('/translate', methods=['POST'])
 def translate():
     text = request.json.get('text', '')
-    result = translator.translate(text)
+    result = translate_hybrid(text, translator)
     return jsonify({"translation": result})
 
 @app.route('/feedback', methods=['POST'])
