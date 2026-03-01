@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from engine.translator import IgboTranslator
+from engine.processor import get_greeting
 import os
 import requests
 import threading
@@ -31,7 +32,8 @@ def send_to_slack(original, user_input):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    greeting = get_greeting()
+    return render_template('index.html', greeting=greeting)
 
 @app.route('/translate', methods=['POST'])
 def translate():

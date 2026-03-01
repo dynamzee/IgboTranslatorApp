@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dyna Translator App</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
 <div class="container">
+    <p id="greeting">{{ greeting }}</p>
     <h2>DYNA's TRANSLATOR APP</h2>
 
     <textarea id="inputText" placeholder="Enter English or Igbo text here..."></textarea>
@@ -42,7 +43,6 @@
             resultDiv.innerText = data.translation;
         } catch (error) {
             resultDiv.innerText = "Error connecting to server.";
-            console.error("Translation error:", error);
         }
     }
 
@@ -56,8 +56,6 @@
             return;
         }
 
-        // Visual feedback so user knows it's working
-        const originalBtnText = submitBtn.innerText;
         submitBtn.innerText = "Sending...";
         submitBtn.disabled = true;
 
@@ -65,15 +63,11 @@
             const response = await fetch('/feedback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    original: original,
-                    user_input: user_input
-                })
+                body: JSON.stringify({ original, user_input })
             });
 
             const data = await response.json();
 
-            // Handle the specific success/error status from mainapp.py
             if (data.status === "success") {
                 alert(data.message);
                 document.getElementById('userSuggestion').value = "";
@@ -81,11 +75,9 @@
                 alert("Error: " + data.message);
             }
         } catch (error) {
-            alert("Failed to connect to the email service.");
-            console.error("Feedback error:", error);
+            alert("Failed to connect to the server.");
         } finally {
-            // Restore button
-            submitBtn.innerText = originalBtnText;
+            submitBtn.innerText = "Send Correction";
             submitBtn.disabled = false;
         }
     }
@@ -93,5 +85,4 @@
 
 </body>
 </html>
-
 
