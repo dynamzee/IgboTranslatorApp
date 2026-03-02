@@ -7,12 +7,7 @@ import threading
 
 app = Flask(__name__)
 
-translator = IgboTranslator(paths={
-    "all_json": "my_data/igbo_phrases_dict.json",
-    "reverse_words_phrases": "my_data/igbo_words_dict.json",
-    "simple_keys": "my_data/igbo_phrases_dict.json",
-    "reverse_simple_keys": "my_data/igbo_words_dict.json"
-})
+translator = IgboTranslator
 
 def send_to_slack(original, user_input):
     webhook_url = os.environ.get('SLACK_WEBHOOK_URL')
