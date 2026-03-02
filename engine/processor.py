@@ -32,13 +32,12 @@ def translate_hybrid(text, translator_instance):
     result = translator_instance.translate(text)
 
     if not result or result.strip() == text.strip() or "not found" in result.lower():
-        print(f"DEBUG: JSON failed for '{text}', calling Gemini...")  # Check Render logs for this!
         return get_ai_fallback(text)
 
     return result
 
 def suggest_word(word, all_dictionary):
-    suggestion = difflib.get_close_matches(word, all_dictionary, n=1, cutoff=0.7)
+    suggestion = difflib.get_close_matches(word, all_dictionary, n=1, cutoff=0.95)
     return suggestion[0] if suggestion else None
 
 
