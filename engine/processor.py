@@ -17,18 +17,22 @@ def get_greeting():
     else:
         return "Anyasi oma, onye nke anyi. Anyi nabatara gi nnoo nke oma."
 
+
 def get_ai_fallback(text):
     try:
-        prompt = f"Translate this to natural Igbo, keeping the cultural vibe: {text}. Return ONLY the translation."
+        prompt = f"Translate the following English text into a full, natural Igbo sentence: '{text}'. Output ONLY the Igbo translation."
         response = model.generate_content(prompt)
-        return response.text.strip()
+        translated_text = response.text.strip()
+        return translated_text if len(translated_text) > 2 else "Ndo, I couldn't translate that properly."
     except Exception as e:
         return f"Ndo (Sorry), I couldn't reach the AI: {e}"
+
 
 def translate_hybrid(text, translator_instance):
     result = translator_instance.translate(text)
 
-    if "not found" in result.lower() or result == text:
+    if not result or result.strip() == text.strip() or "not found" in result.lower():
+        print(f"DEBUG: JSON failed for '{text}', calling Gemini...")  # Check Render logs for this!
         return get_ai_fallback(text)
 
     return result
