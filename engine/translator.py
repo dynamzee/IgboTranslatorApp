@@ -42,7 +42,7 @@ class IgboTranslator:
                 translation.append("not found")
 
         if "not found" in translation:
-            return "not found"
+            return ""
 
         return ", ".join(translation)
 
