@@ -7,7 +7,7 @@ import threading
 
 app = Flask(__name__)
 
-translator = IgboTranslator
+translator = IgboTranslator()
 
 def send_to_slack(original, user_input):
     webhook_url = os.environ.get('SLACK_WEBHOOK_URL')
