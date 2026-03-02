@@ -1,10 +1,9 @@
 import difflib
 from datetime import datetime
-import google.generativeai as genai
+from google import genai
 import os
 
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-1.5-flash')
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 def get_greeting():
     hour = datetime.now().hour
@@ -20,13 +19,15 @@ def get_greeting():
 
 def get_ai_fallback(text):
     try:
-        prompt = f"Translate the following English text into a full, natural Igbo sentence: '{text}'. Output ONLY the Igbo translation."
-        response = model.generate_content(prompt)
-        translated_text = response.text.strip()
-        return translated_text if len(translated_text) > 2 else "Ndo, I couldn't translate that properly."
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=f"Translate to sharp, natural Igbo: '{text}'. Return ONLY the translation."
+        )
+        if response and response.text:
+            return response.text.strip()
+        return "Ndo, API returned no text."
     except Exception as e:
-        return f"Ndo (Sorry), I couldn't reach the AI: {e}"
-
+        return f"API Error: {str(e)[:50]}"
 
 def translate_hybrid(text, translator_instance):
     result = translator_instance.translate(text)
