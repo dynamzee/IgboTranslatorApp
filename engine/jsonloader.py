@@ -7,13 +7,16 @@ def simplify_text(text):
     return nkowa.lower()
 
 
-def load_dictionaries(paths: dict):
-    with open(paths["all_json"], "r", encoding="utf-8") as file:
-        all_json = json.load(file)
+def load_dictionaries(path_list):
+    all_json = {}
 
-    with open(paths["reverse_words_phrases"], "r", encoding="utf-8") as file:
-        words_only = json.load(file)
-        all_json.update(words_only)
+    for path in path_list:
+        try:
+            with open(path, "r", encoding="utf-8") as file:
+                data = json.load(file)
+                all_json.update(data)
+        except FileNotFoundError:
+            print(f"Warning: File not found at {path}")
 
     reverse_words_phrases = {}
     for eng, igbo in all_json.items():

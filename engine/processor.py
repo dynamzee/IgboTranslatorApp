@@ -1,10 +1,9 @@
 import difflib
 from datetime import datetime
 from google import genai
-import json
 import os
 
-MY_CACHE_FILE = "my_data/saved_cache.json"
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 def get_greeting():
     hour = datetime.now().hour
@@ -16,20 +15,6 @@ def get_greeting():
         return "Mgbede oma, onye nke anyi. Anyi nabatara gi nnoo nke oma."
     else:
         return "Anyasi oma, onye nke anyi. Anyi nabatara gi nnoo nke oma."
-
-def load_cache():
-    if os.path.exists(MY_CACHE_FILE):
-        with open(MY_CACHE_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {}
-
-def save_to_cache(english, igbo):
-    cache = load_cache()
-    cache[english.lower().strip()] = igbo
-    with open(MY_CACHE_FILE, "w", encoding="utf-8") as f:
-        json.dump(cache, f, ensure_ascii=False, indent=4)
-
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 def get_ai_fallback(text):
     try:
@@ -44,25 +29,14 @@ def get_ai_fallback(text):
         return "Ndo, we couldn't translate this right now. Try again."
 
 def translate_hybrid(text, translator_instance):
-    clean_text = text.lower().strip()
     result = translator_instance.translate(text)
 
     if not result or result.strip() == "" or "not found" in result.lower():
-        cache = load_cache()
-        if clean_text in cache:
-            return cache[clean_text]
-
-        ai_result = get_ai_fallback(text)
-
-        if "API Error" not in ai_result:
-            save_to_cache(text, ai_result)
-
-        return ai_result
+        return get_ai_fallback(text)
 
     return result
 
 def suggest_word(word, all_dictionary):
     suggestion = difflib.get_close_matches(word, all_dictionary, n=1, cutoff=0.95)
     return suggestion[0] if suggestion else None
-
 

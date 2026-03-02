@@ -1,6 +1,14 @@
-from engine.jsonloader import load_dictionaries
+import os
 import spacy
 import re
+from engine.jsonloader import load_dictionaries
+
+if os.environ.get("RENDER"):
+    PHRASE_PATH = "igbo_phrases_dict.json"
+    WORD_PATH = "igbo_words_dict.json"
+else:
+    PHRASE_PATH = "my_data/igbo_phrases_dict.json"
+    WORD_PATH = "my_data/igbo_words_dict.json"
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -15,18 +23,20 @@ def normalize_text_variations(text):
     return " ".join([variations.get(w, w) for w in words])
 
 class IgboTranslator:
-    def __init__(self, paths):
+    def __init__(self):
+        paths = [PHRASE_PATH, WORD_PATH]
         (self.all_json, self.reverse_words_phrases,
          self.simple_keys, self.reverse_simple_keys) = load_dictionaries(paths)
 
     def translate(self, text):
-        original_text = text.strip().lower()
-        text = normalize_text_variations(original_text)
+        text = text.strip().lower()
+        text = normalize_text_variations(text)
 
-        if original_text in self.all_json: return self.all_json[original_text]
+        if text in self.all_json:
+            return self.all_json[text]
 
         translation = []
-        segmented_text = re.split(r'[,?.]', original_text)
+        segmented_text = re.split(r'[,?.]', text)
 
         for segment in segmented_text:
             s = segment.strip()
@@ -34,9 +44,11 @@ class IgboTranslator:
 
             found = False
             if s in self.all_json:
-                translation.append(self.all_json[s]); found = True
+                translation.append(self.all_json[s])
+                found = True
             elif s + "?" in self.all_json:
-                translation.append(self.all_json[s + "?"]); found = True
+                translation.append(self.all_json[s + "?"])
+                found = True
 
             if not found:
                 translation.append("not found")
@@ -45,14 +57,5 @@ class IgboTranslator:
             return ""
 
         return ", ".join(translation)
-
-
-
-
-
-
-
-
-
 
 
