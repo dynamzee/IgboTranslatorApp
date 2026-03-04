@@ -16,7 +16,7 @@ def get_greeting():
     else:
         return "Anyasi oma, onye nke anyi. Anyi nabatara gi nnoo nke oma."
 
-def get_ai_fallback(text):
+def translate_with_gemini(text):
     try:
         response = client.models.generate_content(
             model="gemini-2.5-flash",
@@ -25,14 +25,15 @@ def get_ai_fallback(text):
         if response and response.text:
             return response.text.strip()
         return "Ndo, API returned no text."
-    except Exception as e:
-        return "Ndo, we couldn't translate this right now. Try again."
+    except Exception as error:
+        print(f"ERROR [from render logs tab]: {error}")
+        return "Ndo, anyi apughi ime ntughari a i choro ugbu a. Biko nwaa ọzọ ntakịrị."
 
-def translate_hybrid(text, translator_instance):
-    result = translator_instance.translate(text)
+def translate_hybrid(text, translated_with_gemini):
+    result = translated_with_gemini.translate(text)
 
     if not result or result.strip() == "" or "not found" in result.lower():
-        return get_ai_fallback(text)
+        return translate_with_gemini(text)
 
     return result
 

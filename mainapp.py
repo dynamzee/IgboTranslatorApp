@@ -16,7 +16,7 @@ def send_to_slack(original, user_input):
         return
 
     payload = {
-        "text": f"🚨 *FEEDBACK_CORRECTION_SUGGESTION!*\n*Original:* {original}\n*Correction:* {user_input}"
+        "text": f"🚨 *FEEDBACK_CORRECTION_SUGGESTION!*\n*text_in_place:* {original}\n*info_from_user:* {user_input}"
     }
 
     try:
