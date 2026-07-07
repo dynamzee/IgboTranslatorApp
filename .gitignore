@@ -1,3 +1,7 @@
+__pycache__/
+*.pyc
+*.pyo
+
 my_data/igbo_words_dict.json
 my_data/igbo_phrases_dict.json
 
